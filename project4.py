@@ -47,11 +47,9 @@ def print_board(game_state: columns_functions.GameState) -> None:
                 elif cellState == columns_functions.FALLER_MOVING_CELL:
                     print('[{}]'.format(jewel), end = '')
                 elif cellState == columns_functions.FALLER_STOPPED_CELL:
-                    # print like ('|' + jewel + '|')
-                    pass
+                    print('|{}|'.format(jewel), end = '')
                 elif cellState == columns_functions.MATCHED_CELL:
-                    # print like ('*' + jewel + '*')
-                    pass                
+                    print('*{}*'.format(jewel), end = '')
         print('|')
     print(' ', end = '')
     for numbers in range(0, numOfColumns):

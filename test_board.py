@@ -3,6 +3,16 @@ from project4 import print_board
 
 def test_empty_board():
     game = columns_functions.GameState(3, 4)
+    game.create_faller(3, ['Z', 'Y', 'X'])
+    game.game_tick()
+    game.game_tick()
+    game.game_tick()
+    game.game_tick()
+
+    print_board(game)
+
+def test_content_board():
+    game = columns_functions.GameState(4, 4)
     contents = [
         [' ', ' ', 'Y', 'X'],
         ['S', ' ', 'V', ' '],
@@ -17,3 +27,4 @@ def test_empty_board():
 
 if __name__ == '__main__':
     test_empty_board()
+    #test_content_board()

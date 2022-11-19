@@ -11,6 +11,9 @@ JEWEL7 = 7
 FALLER_STOPPED = 0
 FALLER_MOVING = 1
 
+MOVE_DOWN  = 0
+MOVE_LEFT  = -1
+MOVE_RIGHT = 1
 
 class Faller:
     def __init__(self):
@@ -115,11 +118,131 @@ class GameState:
         self._faller.contents = falle_contents
         self._faller.set_row(0)
         self._faller.set_col(column - 1)
+        # Display the first cell of the faller
+        self._board[self._faller.get_col()][0] = self._faller.contents[0]
+        self.set_cell_state(self._faller.get_col(), 0, FALLER_MOVING_CELL)        
+
+        # Check if the bottom row immediately under the faller
+        self._update_faller_board_state()
+
+    def game_tick(self) -> bool:
+        """
+        Ticks one time unit for the game. This causes fallers to move down 
+        """
+        # Handle the faller first
+        if self._faller.active:
+            
+            if self._faller.state == FALLER_STOPPED:
+                # Do another update on the faller state to see what state it is now 
+                self._update_faller_board_state()
+                # If the faller is still stopped after the update then freeze it
+                if self._faller.state == FALLER_STOPPED:
+                    value = False
+
+                    # freeze the faller cells on the board
+                    for inx in range(3):
+                        row = self._faller.get_row() - inx
+                        if (row >= 0):
+                            self._board[self._faller.get_col()][row] = self._faller.contents[inx]
+                            self.set_cell_state(self._faller.get_col(), row, OCCUPIED_CELL)
+                    self._faller.active = False
+
+                    #self.do_matching()
+                    return value
+
+            # If the faller is still in moving, move it down
+            self.move_faller_down()
+
+        # Handle matching and apply gravity
+        # self.do_matching()
+        return False
 
     def move_faller_side(self) ->None:
         pass
 
     def move_faller_down(self) ->None:
-        pass
-
+        # Check if the next cell of faller has collision with other cell or ground
+        if (self._has_collision(self._faller.get_col(), self._faller.get_row() + 1)):
+            return
         
+        # Move the bottom row of faller down
+        rowOfFaller = self._faller.get_row()
+        colOfFaller = self._faller.get_col()
+        self._move_cell(colOfFaller, rowOfFaller, MOVE_DOWN)
+        # Move the middle row of faller down
+        self._move_cell(colOfFaller, rowOfFaller - 1, MOVE_DOWN)
+        # Move the top row of faller down
+        self._move_cell(colOfFaller, rowOfFaller - 2,  MOVE_DOWN)
+        
+        # Set the faller down one row (row number increase one)
+        self._faller.set_row(rowOfFaller + 1)
+        self._update_faller_board_state()
+
+    def _update_faller_board_state(self) -> None:
+        """
+        Updates the state of the faller according to its current conditions.
+        If the faller reaches the bottom row then the state is set to FALLER_STOPPED.
+        Otherwise the state is set to FALLER_MOVING.
+        The cells of the faller on the board are updated as well.
+        """
+        state = None
+        toRow = self._faller.get_row() + 1
+        if self._has_collision(self._faller.get_col(), toRow):
+            state = FALLER_STOPPED_CELL
+            self._faller.state = FALLER_STOPPED
+        else:
+            state = FALLER_MOVING_CELL
+            self._faller.state = FALLER_MOVING
+
+        for inx in range(3):
+            row = self._faller.get_row() - inx
+            if row < 0:
+                return
+
+            # Update board cell
+            self._board[self._faller.get_col()][row] = self._faller.contents[inx]
+            self.set_cell_state(self._faller.get_col(), row, state)
+
+    def _has_collision(self, col: int, row: int) -> bool:
+        """
+        Checks if a cell of the given row and column has collision (touch occupied cell or the bottom row)
+        :return: True if the given cell has collision. False otherwise
+        """
+        # The given row is below the bottom row
+        if row >= self.rows():
+            return True
+
+        if self.get_cell_state(col, row) == OCCUPIED_CELL:
+            return True
+
+        return False
+        
+    def _move_cell(self, col: int, row: int, direction: int) -> None:
+        """
+        Moves a cell in the given direction
+        """
+        if direction == MOVE_DOWN:
+            toRow = row + 1
+            if (toRow >= self.rows() or toRow < 0):
+                return
+
+            oldValue = self._board[col][row]
+            oldState = self._boardState[col][row]
+
+            self._board[col][toRow] = oldValue
+            self._boardState[col][toRow] = oldState
+        else:
+            # direction = MOVE_RIGHT (+1) MOVE_LEFT(-1)
+            toCol = col + direction
+            if (toCol >= self.columns() or toCol < 0):
+                return
+
+            oldValue = self._board[col][row]
+            oldState = self._boardState[col][row]
+
+            self._board[toCol][row] = oldValue
+            self._boardState[toCol][row] = oldState        
+
+        self._board[col][row] = EMPTY
+        self._boardState[col][row] = EMPTY_CELL
+
