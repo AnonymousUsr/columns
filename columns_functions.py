@@ -43,7 +43,7 @@ class Faller:
         return self.inbounds
 
     def rotate(self) -> None:
-        if self.state == FALLER_MOVING:
+        if self.state != FALLER_STOPPED_CELL:
             jewelOne = self.contents[2]
             jewelTwo = self.contents[0]
             jewelThree = self.contents[1]
@@ -137,6 +137,7 @@ class GameState:
                     self._matching_begins(col, row)
             if matching == True:
                 self.apply_gravity()
+                self.do_matching()
             matching = False
                         
 
@@ -239,8 +240,9 @@ class GameState:
         
         
         # Set the faller down one row (row number increase one)
-        self._faller.set_col(colOfFaller + 1)
-        self._update_faller_board_state()
+        if self._faller._col >= 0:
+            self._faller.set_col(colOfFaller + 1)
+            self._update_faller_board_state()
 
     def move_faller_left(self) -> None:
         # Check if the next cell of faller has collision with other cell or ground
@@ -308,41 +310,42 @@ class GameState:
         '''
         Moves a cell in the given direction
         '''
-        if direction == MOVE_DOWN:
-            toRow = row + 1
-            if (toRow >= self.rows() or toRow < 0):
-                return
+        if col >= 0 and row >= 0:
+            if direction == MOVE_DOWN:
+                toRow = row + 1
+                if (toRow >= self.rows() or toRow < 0):
+                    return
 
-            oldValue = self._board[col][row]
-            oldState = self._boardState[col][row]
+                oldValue = self._board[col][row]
+                oldState = self._boardState[col][row]
 
-            self._board[col][toRow] = oldValue
-            self._boardState[col][toRow] = oldState
+                self._board[col][toRow] = oldValue
+                self._boardState[col][toRow] = oldState
 
-        elif direction == MOVE_RIGHT:
-            toCol = col + 1
-            if (toCol >= self.columns() or toCol < 0):
-                return
+            elif direction == MOVE_RIGHT:
+                toCol = col + 1
+                if (toCol >= self.columns() or toCol < 0):
+                    return
 
-            oldValue = self._board[col][row]
-            oldState = self._boardState[col][row]
+                oldValue = self._board[col][row]
+                oldState = self._boardState[col][row]
 
-            self._board[toCol][row] = oldValue
-            self._boardState[toCol][row] = oldState
+                self._board[toCol][row] = oldValue
+                self._boardState[toCol][row] = oldState
 
-        elif direction == MOVE_LEFT:
-            toCol = col - 1
-            if (toCol >= self.columns() or toCol < 0):
-                return
+            elif direction == MOVE_LEFT:
+                toCol = col - 1
+                if (toCol >= self.columns() or toCol < 0):
+                    return
 
-            oldValue = self._board[col][row]
-            oldState = self._boardState[col][row]
+                oldValue = self._board[col][row]
+                oldState = self._boardState[col][row]
 
-            self._board[toCol][row] = oldValue
-            self._boardState[toCol][row] = oldState          
-        if row > -1:
-            self._board[col][row] = EMPTY
-            self._boardState[col][row] = EMPTY_CELL
+                self._board[toCol][row] = oldValue
+                self._boardState[toCol][row] = oldState          
+            if row > -1:
+                self._board[col][row] = EMPTY
+                self._boardState[col][row] = EMPTY_CELL
     
     def _matching_jewels(self, col: int, row: int, coldelta: int, rowdelta: int) -> bool:
         start_cell = self._board[col][row]
