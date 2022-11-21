@@ -5,7 +5,7 @@ def input_results():
     columns = input('')
     userInput = input('')
     if userInput.upper() == 'Q':
-        return 'done'
+        return 'over'
     elif userInput.upper() == 'EMPTY':
         game = columns_functions.GameState(int(columns), int(rows))
         print_board(game)
@@ -25,11 +25,11 @@ def input_results():
     while True:
         userInput = input('')
         if userInput.upper().strip() == 'Q':
-            break
+            return 'over'
         elif userInput.strip() == '':
             result = game.game_tick()
             if result == 'over':
-                return result
+                return game
         elif userInput[0].upper() == 'F':
             tempList = []
             tempSplit = userInput.split(' ')
@@ -45,8 +45,8 @@ def input_results():
             game.move_faller_left()
         elif userInput == '>':
             game.move_faller_right()
-        elif userInput == 'Q':
-            return 'done'
+        else:
+            print('Invalid command.')
         print_board(game)
 
 def print_board(game_state: columns_functions.GameState) -> None:
@@ -91,6 +91,9 @@ def split_string(text: str) -> list:
 if __name__ == '__main__':
     results = input_results()
     if results == 'over':
-        print('GAME OVER')
+        None
     elif results == 'error':
         print('ERROR')
+    else:
+        print_board(results)
+        print('GAME OVER')
