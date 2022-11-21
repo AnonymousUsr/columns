@@ -9,21 +9,45 @@ def input_results():
     elif userInput.upper() == 'EMPTY':
         game = columns_functions.GameState(int(columns), int(rows))
         print_board(game)
-        return game
+    elif userInput.upper() == 'CONTENTS':
+        game = columns_functions.GameState(int(columns), int(rows))
+        for num in range(int(rows)):
+            contentInput = input('')
+            splitInput = split_string(contentInput)
+            if len(splitInput) != int(columns):
+                return 'error'
+            game.add_content(num, splitInput)
+        game.apply_gravity()
+        game.do_matching()
+        print_board(game)
+    else:
+        return 'error'
     while True:
         userInput = input('')
-        if userInput[0].upper() == 'F':
-            None
-        elif userInput == '':
-            None
-        elif userInput == 'R':
-            None
+        if userInput.upper().strip() == 'Q':
+            break
+        elif userInput.strip() == '':
+            result = game.game_tick()
+            if result == 'over':
+                return result
+        elif userInput[0].upper() == 'F':
+            tempList = []
+            tempSplit = userInput.split(' ')
+            for item in tempSplit[2:]:
+                if type(item) == 'String':
+                    item = item.upper()
+                tempList.append(item)
+            tempList.reverse()
+            game.create_faller(int(tempSplit[1]), tempList)
+        elif userInput.upper().strip() == 'R':
+            game.rotate_faller()
         elif userInput == '<':
-            None
+            game.move_faller_left()
         elif userInput == '>':
-            None
+            game.move_faller_right()
         elif userInput == 'Q':
-            None
+            return 'done'
+        print_board(game)
 
 def print_board(game_state: columns_functions.GameState) -> None:
     '''Prints out the board of a connect four game
@@ -48,14 +72,25 @@ def print_board(game_state: columns_functions.GameState) -> None:
                     print('[{}]'.format(jewel), end = '')
                 elif cellState == columns_functions.FALLER_STOPPED_CELL:
                     print('|{}|'.format(jewel), end = '')
+                    pass
                 elif cellState == columns_functions.MATCHED_CELL:
                     print('*{}*'.format(jewel), end = '')
+                    pass                
         print('|')
     print(' ', end = '')
     for numbers in range(0, numOfColumns):
         print('---', end = '')
     print(' ')
 
+def split_string(text: str) -> list:
+    returnList = []
+    for char in text:
+        returnList.append(char)
+    return returnList
 
 if __name__ == '__main__':
-    input_results()
+    results = input_results()
+    if results == 'over':
+        print('GAME OVER')
+    elif results == 'error':
+        print('ERROR')
